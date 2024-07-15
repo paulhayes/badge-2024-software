@@ -52,7 +52,8 @@
 #define Cmd_TEON 0x35    // Tearing effect line ON
 #define Cmd_MADCTL 0x36  // Memory data access control
 #define Cmd_COLMOD 0x3A  // Pixel format set
-
+#define Cmd_DISBRI 0x51
+#define Cmd_CTLDIS 0x53
 #define Cmd_DisplayFunctionControl 0xB6
 #define Cmd_PWCTR1 0xC1  // Power control 1
 #define Cmd_PWCTR2 0xC3  // Power control 2
@@ -399,23 +400,24 @@ static esp_err_t flow3r_bsp_gc9a01_row_set(flow3r_bsp_gc9a01_t *gc9a01,
 
 esp_err_t flow3r_bsp_gc9a01_backlight_set(flow3r_bsp_gc9a01_t *gc9a01,
                                           uint8_t value) {
-    if (gc9a01->config->backlight_used == 0) {
-        return ESP_OK;
-    }
-    if (value > 100) {
-        value = 100;
-    }
 
-    uint16_t max_duty = (1 << (int)gc9a01->bl_timer_config.duty_resolution) - 1;
-    uint16_t duty;
-    if (value >= 100) {
-        duty = max_duty;
-    } else {
-        duty = value * (max_duty / (float)100);
-    }
+    // no longer checking gc9a01->config->backlight_used, remove config param or add check?
+    // no longer using config setting gc9a01->bl_channel_config, remove?
 
-    gc9a01->bl_channel_config.duty = duty;
-    return ledc_channel_config(&gc9a01->bl_channel_config);
+    uint8_t BL = ( value>0x00 ) << 2;
+    uint8_t DD = ( value<0xff ) << 3;
+    uint8_t BCTRL = 1 << 5; 
+
+    esp_err_t ret = flow3r_bsp_gc9a01_cmd_sync(gc9a01, Cmd_CTLDIS);    
+    if (ret != ESP_OK) {
+        return ret;
+    }
+    flow3r_bsp_gc9a01_data_sync(gc9a01, BL | DD | BCTL, 1);
+        
+    ret = flow3r_bsp_gc9a01_cmd_sync(gc9a01, Cmd_DISBRI);    
+    flow3r_bsp_gc9a01_data_sync(gc9a01, value, 1);
+
+    return ret;
 }
 
 esp_err_t flow3r_bsp_gc9a01_init(flow3r_bsp_gc9a01_t *gc9a01,
