@@ -27,6 +27,13 @@ static mp_obj_t get_fps() {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(get_fps_obj, get_fps);
 
+static mp_obj_t set_backlight(uint8_t brightness) {
+    flow3r_bsp_display_set_backlight(brightness)
+    return mp_const_none;
+}
+
+static MP_DEFINE_CONST_FUN_OBJ_1(set_backlight_obj, set_backlight)
+
 #define TILDAGON_DISPLAY_WIDTH  240
 #define TILDAGON_DISPLAY_HEIGHT 240
 
@@ -139,6 +146,7 @@ static const mp_rom_map_elem_t display_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bsp_init), MP_ROM_PTR(&bsp_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_splash), MP_ROM_PTR(&splash_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_fps), MP_ROM_PTR(&get_fps_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_backlight), MP_ROM_PTR(&set_backlight_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_ctx), MP_ROM_PTR(&get_ctx_obj) },
     { MP_ROM_QSTR(MP_QSTR_end_frame), MP_ROM_PTR(&end_frame_obj) },
     { MP_ROM_QSTR(MP_QSTR_hexagon), MP_ROM_PTR(&hexagon_obj) },
